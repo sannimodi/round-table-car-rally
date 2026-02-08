@@ -41,7 +41,7 @@ logger.RallyConfigReadSuccessful("Marshal Chart");
 // Compile the chart
 var compiler = new SegmentCompiler(factory.CreateLogger<SegmentCompiler>());
 
-var compiledChart = compiler.CompileChart(speedChart, marshalChart);
+var compiledChart = compiler.CompileChart(speedChart, marshalChart, config.RoundingThresholdSeconds);
 
 DataPrintHelper.PrintConfiguration(config);
 DataPrintHelper.PrintSpeedChart(speedChart);

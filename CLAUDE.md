@@ -35,12 +35,29 @@ dotnet test ResultCalculator/ResultCalculatorTests/ResultCalculatorTests.csproj
 ## Data File Requirements
 
 The application expects CSV files in `Desktop/CarRallyData/`:
-- `config.csv` - Rally configuration (table name, date, time, participants, penalty values)
+
+### Input Files (Required)
+- `config.csv` - Rally configuration (table name, date, time, participants, penalty values, rounding threshold)
+  - **Required Columns**: All columns must be present or application will halt with error
+    - Table Name, DATE, TIME, Participants
+    - Early Penalty, Late Penalty, Missed Penalty, Extra Break Penalty
+    - Rounding Threshold (0-59 seconds)
+  - **Rounding Threshold**: Configurable value (0-59 seconds) that determines when time differences round up vs down
+    - If remaining seconds >= threshold, rounds up to next minute
+    - If remaining seconds < threshold, rounds down to current minute
+    - Example with threshold=30: 5min 29sec → 5min, 5min 30sec → 6min, 5min 31sec → 6min
+    - Default value: 30 (standard rounding)
 - `speed_chart.csv` - Speed reference points (SR) with distance ranges and average speeds
 - `marshal_chart.csv` - Marshal point locations and break durations
-- `marshal_data.csv` - Actual car arrival/departure times (auto-generated if missing)
+- `marshals/` folder - **REQUIRED**: Must contain at least one scan file for each marshal point
+  - `marshals/{PointName}.*.csv` - Individual marshal point scan files (e.g., marshals/START.001.csv, marshals/MP1.001.csv)
+  - **Validation**: Application will not proceed if any marshal point is missing scan files
 - `assets/fonts/` - Custom fonts for PDF generation
 - `assets/images/` - Images for PDF generation
+
+### Output Files (Generated in `result/` subfolder)
+- `result/marshal_data.csv` - Compiled marshal data from all scan files
+- `result/{filename}.pdf` - Generated PDF reports
 
 ## Architecture
 
@@ -74,6 +91,9 @@ The application expects CSV files in `Desktop/CarRallyData/`:
 
 ### Penalty Calculation Rules
 
+- **Time Rounding**: All time differences use configurable threshold-based rounding (set via RoundingThresholdSeconds in config.csv)
+  - Applied to: actual travel time calculations, break duration calculations
+  - Ensures consistent rounding behavior across all penalty calculations
 - **Early arrival**: penalty = EarlyPenalty x minutes_early (multiplier: 1-5)
 - **Late arrival**: penalty = LatePenalty x minutes_late (multiplier: 1-3)
 - **Missed marshal point**: fixed MissedPenalty (30-100 points)

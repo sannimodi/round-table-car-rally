@@ -14,7 +14,8 @@ internal class MarshalDataCompiler(ILogger<MarshalDataCompiler> logger) : DataCo
 
             var carRallyResult = new CarRallyResult
             {
-                CarNumber = carNumber
+                CarNumber = carNumber,
+                RoundingThresholdSeconds = config.RoundingThresholdSeconds
             };
 
             // Initiate START point.
@@ -80,14 +81,21 @@ internal class MarshalDataCompiler(ILogger<MarshalDataCompiler> logger) : DataCo
 
                     marshalPointRecord.ArrivalTime = arrivalTime;
                     marshalPointRecord.DepartureTime = departureTime;
-                    
-                    marshalPointRecord.ActualTimeFromLastPoint = (int)(marshalPointRecord.ArrivalTime.Value - lastDepartureTime).TotalMinutes;
+
+                    marshalPointRecord.ActualTimeFromLastPoint = DataExtensions.GetRoundedMinutesDifference(
+                        marshalPointRecord.ArrivalTime.Value,
+                        lastDepartureTime,
+                        config.RoundingThresholdSeconds);
+
                     marshalPointRecord.TimeDifference = marshalPointRecord.ActualTimeFromLastPoint - marshalPointRecord.BestTimeFromLastPoint;
                     marshalPointRecord.TimePenalty = marshalPointRecord.TimeDifference == 0 ? 0
                         : marshalPointRecord.TimeDifference > 0 ? config.LatePenalty * marshalPointRecord.TimeDifference
                         : -1 * config.EarlyPenalty * marshalPointRecord.TimeDifference;
 
-                    var breakDuration = (int)(departureTime - arrivalTime).TotalMinutes;
+                    var breakDuration = DataExtensions.GetRoundedMinutesDifference(
+                        departureTime,
+                        arrivalTime,
+                        config.RoundingThresholdSeconds);
 
                     if (breakDuration > currentMarshalPoint.BreakDuration)
                     {

@@ -25,6 +25,7 @@ internal static class DataPrintHelper
         table.AddRow("Late Penalty", $"[green]{config.LatePenalty}[/]");
         table.AddRow("Missed Penalty", $"[green]{config.MissedPenalty}[/]");
         table.AddRow("Break Penalty", $"[green]{config.ExtraBreakPenalty}[/]");
+        table.AddRow("Rounding Threshold", $"[green]{config.RoundingThresholdSeconds}s[/]");
 
         // Print the table
         AnsiConsole.Write(table);
@@ -186,7 +187,7 @@ internal static class DataPrintHelper
                     DataExtensions.TimeOnlyString(item.ArrivalTime),
                     item.IsMissed ? $"[red]{DataExtensions.TimeOnlyString(item.DepartureTime)}[/]" : DataExtensions.TimeOnlyString(item.DepartureTime),
                     item.IsMissed ? "Y" : "N",
-                    item.BreakDuration().ToString(),
+                    item.BreakDuration(result.RoundingThresholdSeconds).ToString(),
                     item.ActualTimeFromLastPoint.ToString(),
                     item.BestTimeFromLastPoint.ToString(),
                     item.TimeDifference.ToString(),

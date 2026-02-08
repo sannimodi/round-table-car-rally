@@ -2,6 +2,8 @@
 {
     public required int CarNumber { get; set; }
 
+    public int RoundingThresholdSeconds { get; set; }
+
     public List<CarMarshalPointRecord> MarshalPointRecords { get; set; } = [];
 
     public int GetTotalPenalty => MarshalPointRecords.Sum(x => x.TimePenalty + x.BreakPenalty);
@@ -24,11 +26,14 @@
         public bool IsMissed { get; set; }
 
         // Break duration at the marshal point
-        public int BreakDuration()
+        public int BreakDuration(int roundingThresholdSeconds)
         {
             if (ArrivalTime.HasValue && DepartureTime.HasValue)
             {
-                return (int) (DepartureTime.Value - ArrivalTime.Value).TotalMinutes;
+                return DataExtensions.GetRoundedMinutesDifference(
+                    DepartureTime.Value,
+                    ArrivalTime.Value,
+                    roundingThresholdSeconds);
             }
 
             return 0;

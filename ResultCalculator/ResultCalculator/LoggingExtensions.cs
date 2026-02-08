@@ -42,6 +42,10 @@ internal static partial class LoggingExtensions
     [LoggerMessage(LogLevel.Error, "Missing CSV header: {ExpectedHeader}")]
     public static partial void MissingCsvHeader(this ILogger logger, string expectedHeader);
 
+    // Log missing required column in config file
+    [LoggerMessage(LogLevel.Error, "Missing required column '{ColumnName}' in configuration file: {FilePath}")]
+    public static partial void MissingConfigColumn(this ILogger logger, string columnName, string filePath);
+
     // Validating csv headers
     [LoggerMessage(LogLevel.Information, "Validating csv headers.")]
     public static partial void ValidatingCsvHeaders(this ILogger logger);

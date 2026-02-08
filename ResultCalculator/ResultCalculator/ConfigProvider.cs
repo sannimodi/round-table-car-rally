@@ -32,6 +32,24 @@
 
     public static string GetMarshalDataPath()
     {
-        return Path.Combine(GetDataPath(), "marshal_data.csv");
+        return Path.Combine(GetResultPath(), "marshal_data.csv");
+    }
+
+    public static string GetMarshalsPath()
+    {
+        return Path.Combine(GetDataPath(), "marshals");
+    }
+
+    public static string GetResultPath()
+    {
+        var resultPath = Path.Combine(GetDataPath(), "result");
+
+        // Ensure the result directory exists
+        if (!Directory.Exists(resultPath))
+        {
+            Directory.CreateDirectory(resultPath);
+        }
+
+        return resultPath;
     }
 }

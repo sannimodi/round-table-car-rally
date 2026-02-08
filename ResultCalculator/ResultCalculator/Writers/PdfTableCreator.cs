@@ -45,7 +45,7 @@ internal class PdfTableCreator
         }
 
         // Save the document
-        document.Save(Path.Combine(ConfigProvider.GetDataPath(), $"{filename}.pdf"));
+        document.Save(Path.Combine(ConfigProvider.GetResultPath(), $"{filename}.pdf"));
 
         // Cleanup
         document.Dispose();

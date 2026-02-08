@@ -18,6 +18,8 @@ internal class RallyConfig
 
     public required int ExtraBreakPenalty { get; set; }
 
+    public required int RoundingThresholdSeconds { get; set; }
+
     /// <summary>
     /// TableName is required
     /// Date is required
@@ -63,6 +65,11 @@ internal class RallyConfig
         if(ExtraBreakPenalty is < 0 or > 2)
         {
             results.Add(new ValidationResult("ExtraBreakPenalty should be between 0 and 2", [nameof(ExtraBreakPenalty)]));
+        }
+
+        if (RoundingThresholdSeconds < 0 || RoundingThresholdSeconds > 59)
+        {
+            results.Add(new ValidationResult("RoundingThresholdSeconds should be between 0 and 59", [nameof(RoundingThresholdSeconds)]));
         }
 
         return results;

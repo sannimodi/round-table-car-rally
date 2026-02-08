@@ -36,6 +36,31 @@ internal class RallyConfigReader(ILogger<RallyConfigReader> logger) : CsvReaderB
         // Get the first line
         var line = lines.First();
 
+        // Validate all required columns exist
+        var requiredColumns = new[]
+        {
+            "Table Name",
+            "DATE",
+            "TIME",
+            "Participants",
+            "Early Penalty",
+            "Late Penalty",
+            "Missed Penalty",
+            "Extra Break Penalty",
+            "Rounding Threshold"
+        };
+
+        var headers = line.Headers;
+        foreach (var column in requiredColumns)
+        {
+            if (!headers.Contains(column))
+            {
+                _logger.MissingConfigColumn(column, configPath);
+                config = null;
+                return false;
+            }
+        }
+
         try
         {
             config = new RallyConfig
@@ -47,7 +72,8 @@ internal class RallyConfigReader(ILogger<RallyConfigReader> logger) : CsvReaderB
                 EarlyPenalty = int.Parse(line["Early Penalty"]),
                 LatePenalty = int.Parse(line["Late Penalty"]),
                 MissedPenalty = int.Parse(line["Missed Penalty"]),
-                ExtraBreakPenalty = int.Parse(line["Extra Break Penalty"])
+                ExtraBreakPenalty = int.Parse(line["Extra Break Penalty"]),
+                RoundingThresholdSeconds = int.Parse(line["Rounding Threshold"])
             };
 
             var results = config.Validate();

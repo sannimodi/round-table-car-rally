@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 internal sealed partial class MarshalDataBuilder(ILogger<MarshalDataBuilder> logger) : CsvReaderBase(logger)
 {
-    private const string pattern = @"\/(\d+)$";
+    private const string pattern = @"\-(\d+)$";
 
     /// <summary>
     /// Scan CSV files named {pointName}.*.csv and validate the records
@@ -19,6 +19,14 @@ internal sealed partial class MarshalDataBuilder(ILogger<MarshalDataBuilder> log
     /// <returns></returns>
     public bool Build(RallyConfig config, List<MarshalPoint> marshalPoints)
     {
+        // Validate marshals folder exists
+        var marshalsPath = ConfigProvider.GetMarshalsPath();
+        if (!Directory.Exists(marshalsPath))
+        {
+            _logger.FileNotFound("Marshals folder", marshalsPath);
+            return false;
+        }
+
         var headers = new List<string> { "Car Number" };
 
         headers.AddRange(marshalPoints.Select(x => x.PointName));
@@ -45,12 +53,12 @@ internal sealed partial class MarshalDataBuilder(ILogger<MarshalDataBuilder> log
         {
             MarshalPoint? item = marshalPoints[pIndex];
 
-            var files = Directory.GetFiles(ConfigProvider.GetDataPath(), $"{item.PointName}.*.csv");
+            var files = Directory.GetFiles(ConfigProvider.GetMarshalsPath(), $"{item.PointName}.*.csv");
 
             if (files.Length == 0)
             {
-                _logger.FileNotFound("MarshalData", $"{item.PointName}.*.csv");
-                //return false;
+                _logger.FileNotFound("MarshalData", $"marshals/{item.PointName}.*.csv");
+                return false;
             }
 
             // Read each file.
@@ -145,7 +153,7 @@ internal sealed partial class MarshalDataBuilder(ILogger<MarshalDataBuilder> log
 
         var csvWrite = CsvWriter.WriteToText([.. headers], rows, ',');
 
-        File.WriteAllText(Path.Combine(ConfigProvider.GetDataPath(), "marshal_data.csv"), csvWrite);
+        File.WriteAllText(Path.Combine(ConfigProvider.GetResultPath(), "marshal_data.csv"), csvWrite);
 
         return true;
     }

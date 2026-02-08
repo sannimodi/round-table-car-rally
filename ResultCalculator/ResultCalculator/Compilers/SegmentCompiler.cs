@@ -2,7 +2,7 @@
 
 internal class SegmentCompiler(ILogger<SegmentCompiler> logger) : DataCompilerBase(logger)
 {
-    public List<CompiledSegment> CompileChart(List<SpeedReferencePoint> speedReferences, List<MarshalPoint> marshalPoints)
+    public List<CompiledSegment> CompileChart(List<SpeedReferencePoint> speedReferences, List<MarshalPoint> marshalPoints, int roundingThresholdSeconds)
     {
         _logger.LogInformation("Compiling the speed chart");
 
@@ -40,7 +40,7 @@ internal class SegmentCompiler(ILogger<SegmentCompiler> logger) : DataCompilerBa
 
                 // Marshal time is the total time taken from last marshal point to the current marshal point
                 // Skip the calculation if the marshal point is the first point
-                if(marshalPoint.Distance == 0)
+                if (marshalPoint.Distance == 0)
                 {
                     marshalSegment.MarshalTime = 0;
                 }
@@ -57,13 +57,14 @@ internal class SegmentCompiler(ILogger<SegmentCompiler> logger) : DataCompilerBa
                         }
                         // Add the time taken to reach the previous point
                         marshalTime += compiledSegments[i].TimeFromLastPoint;
-                    }                    
+                    }
 
                     // Marshal time is the total time taken from last marshal point to the current marshal point
-                    marshalSegment.MarshalTime = Math.Round(marshalTime,2);
+                    marshalSegment.MarshalTime = Math.Round(marshalTime, 2);
 
-                    // Rounding off the marshal time to the nearest minute
-                    marshalPoint.TimeToReach = (int)marshalTime;
+                    // Rounding off the marshal time to the nearest minute using threshold-based rounding
+                    // This ensures consistency with actual time rounding (GetRoundedMinutesDifference)
+                    marshalPoint.TimeToReach = DataExtensions.RoundToInt(marshalTime, roundingThresholdSeconds);
                 }
             }
 
