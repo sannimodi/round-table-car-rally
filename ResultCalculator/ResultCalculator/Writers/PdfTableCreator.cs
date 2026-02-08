@@ -21,6 +21,7 @@ internal class PdfTableCreator
 
         // Start drawing on the page
         XGraphics gfx = XGraphics.FromPdfPage(page);
+        double pageHeight = page.Height.Point;
         DrawTableHeader(gfx, tableName, page);
 
         double yPosition = _yStart;
@@ -28,11 +29,12 @@ internal class PdfTableCreator
         foreach (string value in values)
         {
             // Check if we need a new page
-            if (yPosition + _rowHeight > page.Height - _xStart)
+            if (yPosition + _rowHeight > pageHeight - _xStart)
             {
                 // Add a new page
                 page = document.AddPage();
                 gfx = XGraphics.FromPdfPage(page);
+                pageHeight = page.Height.Point;
                 yPosition = _yStart; // Reset y position for the new page
 
                 DrawTableHeader(gfx, tableName, page); // Optionally redraw the table header on each page
@@ -51,12 +53,12 @@ internal class PdfTableCreator
 
     private void DrawTableHeader(XGraphics gfx, string tableName, PdfPage page)
     {
-        gfx.DrawString(tableName, _titleFont, XBrushes.Black, new XRect(0, 20, page.Width, page.Height), XStringFormats.TopCenter);
+        gfx.DrawString(tableName, _titleFont, XBrushes.Black, new XRect(0, 20, page.Width.Point, page.Height.Point), XStringFormats.TopCenter);
     }
 
     private void DrawRow(XGraphics gfx, string[] rowValues, PdfPage page, ref double yPosition)
     {
-        double columnWidth = (page.Width - 100) / rowValues.Length;
+        double columnWidth = (page.Width.Point - 100) / rowValues.Length;
         double textMargin = 15; // Margin between the top of the cell and the text
 
         for (int i = 0; i < rowValues.Length; i++)
