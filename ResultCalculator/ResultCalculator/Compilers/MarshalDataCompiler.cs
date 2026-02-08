@@ -77,7 +77,36 @@ internal class MarshalDataCompiler(ILogger<MarshalDataCompiler> logger) : DataCo
                     marshalPointRecord.IsMissed = false;
 
                     var arrivalTime = currentMdp.First();
-                    var departureTime = currentMdp.Last();
+                    TimeOnly departureTime;
+
+                    // NEW: Check if this is a break point with single scan
+                    if (currentMarshalPoint.BreakDuration > 0 && currentMdp.Length == 1)
+                    {
+                        // Single scan at break checkpoint - assume break time
+                        departureTime = arrivalTime.AddMinutes(currentMarshalPoint.BreakDuration);
+
+                        // NO break penalty calculation for single-scan break points
+                        marshalPointRecord.BreakPenalty = 0;
+                    }
+                    else
+                    {
+                        // Normal checkpoint OR break checkpoint with dual scan (legacy support)
+                        departureTime = currentMdp.Last();
+
+                        // Calculate break penalty only if this is a break point with multiple scans
+                        if (currentMarshalPoint.BreakDuration > 0)
+                        {
+                            var breakDuration = DataExtensions.GetRoundedMinutesDifference(
+                                departureTime,
+                                arrivalTime,
+                                config.RoundingThresholdSeconds);
+
+                            if (breakDuration > currentMarshalPoint.BreakDuration)
+                            {
+                                marshalPointRecord.BreakPenalty = config.ExtraBreakPenalty * (breakDuration - currentMarshalPoint.BreakDuration);
+                            }
+                        }
+                    }
 
                     marshalPointRecord.ArrivalTime = arrivalTime;
                     marshalPointRecord.DepartureTime = departureTime;
@@ -91,16 +120,6 @@ internal class MarshalDataCompiler(ILogger<MarshalDataCompiler> logger) : DataCo
                     marshalPointRecord.TimePenalty = marshalPointRecord.TimeDifference == 0 ? 0
                         : marshalPointRecord.TimeDifference > 0 ? config.LatePenalty * marshalPointRecord.TimeDifference
                         : -1 * config.EarlyPenalty * marshalPointRecord.TimeDifference;
-
-                    var breakDuration = DataExtensions.GetRoundedMinutesDifference(
-                        departureTime,
-                        arrivalTime,
-                        config.RoundingThresholdSeconds);
-
-                    if (breakDuration > currentMarshalPoint.BreakDuration)
-                    {
-                        marshalPointRecord.BreakPenalty = config.ExtraBreakPenalty * (breakDuration - currentMarshalPoint.BreakDuration);
-                    }
                 }
                 else
                 {

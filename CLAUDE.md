@@ -100,6 +100,48 @@ The application expects CSV files in `Desktop/CarRallyData/`:
 - **Extra break time**: ExtraBreakPenalty x extra_minutes (multiplier: 0-2)
 - **Proxy time**: When a marshal point is missed, departure time = previous_departure + expected_travel_time
 
+### Break Time Handling (2025 Method)
+
+For checkpoints with `BreakDuration > 0`, the system supports two scanning modes:
+
+**Single-Scan Mode (Recommended)**:
+- Only scan arrival/entry time at the break checkpoint
+- System assumes departure time = arrival time + break duration
+- NO break penalty is calculated at the break checkpoint
+- Participants must manage their own break time
+- Any extra/short break time appears as timing difference at next checkpoint
+
+**Example CSV Data** (15-min break checkpoint):
+```csv
+# harekrishna.csv
+Car Code,Time Captured
+ART40/25/005,10:32:00
+```
+Result: Departure time calculated as 10:47:00 (10:32 + 15 min)
+
+**Dual-Scan Mode (Legacy Support)**:
+- Scan both entry and exit times (separated by pipe |)
+- System calculates actual break duration
+- Break penalty applied if exceeds allowed duration
+- Backward compatible with 2024 format
+
+**Example CSV Data** (15-min break checkpoint):
+```csv
+# harekrishna.csv
+Car Code,Time Captured
+ART40/25/005,10:32:00 | 10:50:00
+```
+Result: Departure time recorded as 10:50:00, break penalty calculated (18-15=3 extra minutes)
+
+**Penalty Calculation Shift**:
+- **Single-scan**: No break penalty at checkpoint, all timing appears at next checkpoint
+- **Dual-scan**: Break penalty at checkpoint + timing penalty at next checkpoint
+- Total penalty may differ slightly due to multiplier differences (LatePenalty vs ExtraBreakPenalty)
+
+**Example Comparison** (participant takes 20 min break at 15-min checkpoint):
+- Single-scan: 0 break penalty at CP, 5 min late at next CP (5 × LatePenalty)
+- Dual-scan: 5 min break penalty at CP (5 × ExtraBreakPenalty), timing penalty at next CP
+
 ### Code Organization
 
 - `Compilers/` - Chart compilation and result calculation logic
