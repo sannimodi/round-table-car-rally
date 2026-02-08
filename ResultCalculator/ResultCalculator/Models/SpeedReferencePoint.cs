@@ -23,7 +23,7 @@ internal class SpeedReferencePoint
             results.Add(new ValidationResult("Reference is required", [nameof(Reference)]));
         }
 
-        if(FromKM < 0 || FromKM > 100)
+        if(FromKM is < 0 or > 100)
         {
             results.Add(new ValidationResult("FromKM should be non zero and less than 100", [nameof(FromKM)]));
         }

@@ -45,22 +45,22 @@ internal class RallyConfig
             results.Add(new ValidationResult("Participants should be greater than 0", [nameof(Participants)]));
         }
 
-        if (EarlyPenalty < 1 || EarlyPenalty > 5)
+        if (EarlyPenalty is < 1 or > 5)
         {
             results.Add(new ValidationResult("EarlyPenalty should be between 1 and 5", [nameof(EarlyPenalty)]));
         }
 
-        if (LatePenalty < 1 || LatePenalty > 3)
+        if (LatePenalty is < 1 or > 3)
         {
             results.Add(new ValidationResult("LatePenalty should be between 1 and 3", [nameof(LatePenalty)]));
         }
 
-        if (MissedPenalty < 30 || MissedPenalty > 100)
+        if (MissedPenalty is < 30 or > 100)
         {
             results.Add(new ValidationResult("MissedPenalty should be between 30 and 100", [nameof(MissedPenalty)]));
         }
 
-        if(ExtraBreakPenalty < 0 || ExtraBreakPenalty > 2)
+        if(ExtraBreakPenalty is < 0 or > 2)
         {
             results.Add(new ValidationResult("ExtraBreakPenalty should be between 0 and 2", [nameof(ExtraBreakPenalty)]));
         }
